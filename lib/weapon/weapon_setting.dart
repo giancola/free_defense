@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flame/cache.dart';
+import 'dart:ui';
+
+import 'package:flame/assets.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
 

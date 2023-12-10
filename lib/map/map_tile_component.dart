@@ -1,5 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:freedefense/base/game_component.dart';
 import 'package:freedefense/game/game_controller.dart';
