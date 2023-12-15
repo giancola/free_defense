@@ -13,7 +13,7 @@ import 'package:freedefense/view/weapon_factory_view.dart';
 import 'package:freedefense/view/weaponview_widget.dart';
 import 'package:freedefense/weapon/weapon_component.dart';
 
-import '../neutral/neutual_component.dart';
+import '../neutral/neutral_component.dart';
 
 GameSetting gameSetting = GameSetting();
 
