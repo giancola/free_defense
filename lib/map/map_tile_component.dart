@@ -8,7 +8,7 @@ enum MapTileBuildStatus { Empty, BuildPreview, BuildDone }
 
 enum MapTileBuildEvent { None, BuildPreview, BuildDone, BuildCancel }
 
-class MapTileComponent extends GameComponent with TapCallbacks {
+class MapTileComponent extends GameComponent with TapCallbacks, HoverCallbacks {
   MapTileBuildStatus buildStatus = MapTileBuildStatus.Empty;
   GameComponent? refComponent;
   bool ableToBuild = true;
@@ -37,5 +37,23 @@ class MapTileComponent extends GameComponent with TapCallbacks {
   bool onTapDown(TapDownEvent event) {
     gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
     return false;
+  }
+
+  @override
+  void onHoverEnter() {
+    // Show preview on hover
+    gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
+    super.onHoverEnter();
+  }
+
+  @override
+  void onHoverLeave() {
+    // Hide the preview when cursor leaves the tile grid
+    final controller = gameRef.gameController;
+    if (controller.buildingWeapon != null && controller.buildingWeapon!.buildDone == false) {
+      controller.buildingWeapon!.removeFromParent();
+      controller.buildingWeapon = null;
+    }
+    super.onHoverLeave();
   }
 }
