@@ -34,16 +34,14 @@ class MapTileComponent extends GameComponent with TapCallbacks, HoverCallbacks {
   }
 
   @override
-  bool onTapDown(TapDownEvent event) {
+  void onTapDown(TapDownEvent event) {
     gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
-    return false;
   }
 
   @override
   void onHoverEnter() {
     // Show preview on hover
     gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
-    super.onHoverEnter();
   }
 
   @override
@@ -54,6 +52,5 @@ class MapTileComponent extends GameComponent with TapCallbacks, HoverCallbacks {
       controller.buildingWeapon!.removeFromParent();
       controller.buildingWeapon = null;
     }
-    super.onHoverLeave();
   }
 }

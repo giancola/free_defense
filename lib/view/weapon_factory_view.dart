@@ -166,13 +166,12 @@ class SingleWeaponView extends GameComponent with TapCallbacks {
   }
 
   @override
-  bool onTapDown(TapDownEvent event) {
+  void onTapDown(TapDownEvent event) {
     if (selected) {
       gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
     } else {
       gameRef.gameController.send(this, GameControl.WEAPON_SELECTED);
     }
-    return false;
   }
 
   @override

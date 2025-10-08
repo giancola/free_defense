@@ -197,7 +197,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
   }
 
   @override
-  bool onTapDown(TapDownEvent event) {
+  void onTapDown(TapDownEvent event) {
     if (buildDone == false) {
       if (buildAllowed) {
         gameRef.gameController.send(this, GameControl.WEAPON_BUILD_DONE);
@@ -207,11 +207,10 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
       if (active) {
         gameRef.gameController.send(this, GameControl.WEAPON_SHOW_ACTION);
       } else {
-        return true;
+        // Consume the event when weapon is inactive
+        event.handled = true;
         // gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
       }
     }
-
-    return false;
   }
 }
