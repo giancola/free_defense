@@ -101,19 +101,8 @@ mixin EnemySmartMove on GameComponent {
   }
 
   Vector2 moveRadomPosition(AstarNode node) {
-    if (node.next == null) {
-      /*target goto center*/
-      Vector2 lefttop = gameRef.mapController.nodeToPosition(node);
-      return lefttop + (gameRef.mapController.tileSize / 2);
-    } else {
-      Vector2 lefttop = gameRef.mapController.nodeToPosition(node);
-      Vector2 randomArea = Vector2(
-          gameRef.mapController.tileSize.x - this.size.x,
-          gameRef.mapController.tileSize.y - this.size.y);
-      lefttop = lefttop + Vector2(this.size.x / 2, this.size.y / 2);
-      double rndx = Random().nextDouble();
-      double rndy = Random().nextDouble();
-      return lefttop + Vector2(randomArea.x * rndx, randomArea.y * rndy);
-    }
+    // Always move to center of tile to prevent overlapping with weapons
+    Vector2 lefttop = gameRef.mapController.nodeToPosition(node);
+    return lefttop + (gameRef.mapController.tileSize / 2);
   }
 }

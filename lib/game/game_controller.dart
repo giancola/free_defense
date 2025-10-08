@@ -41,14 +41,24 @@ class GameInstruction {
     switch (instruction) {
       case GameControl.WEAPON_BUILDING:
         WeaponViewWidget.hide();
-        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position);
-        if (component != null) {
-          controller.add(component);
+        // Check if placement would block the path before creating preview
+        bool wouldBlockPath = controller.gameRef.mapController.testBlock(this.source.position);
+        
+        // Only create preview if it doesn't block the path
+        if (!wouldBlockPath) {
+          WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position);
+          if (component != null) {
+            controller.add(component);
+            controller.buildingWeapon?.removeFromParent();
+            controller.buildingWeapon = component;
+            component.blockMap = component.collision(controller.gateStart) ||
+                component.collision(controller.gateEnd) ||
+                wouldBlockPath;
+          }
+        } else {
+          // Remove any existing preview when hovering over blocking position
           controller.buildingWeapon?.removeFromParent();
-          controller.buildingWeapon = component;
-          component.blockMap = component.collision(controller.gateStart) ||
-              component.collision(controller.gateEnd) ||
-              controller.gameRef.mapController.testBlock(component.position);
+          controller.buildingWeapon = null;
         }
         break;
       case GameControl.WEAPON_SELECTED:

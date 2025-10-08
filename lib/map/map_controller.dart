@@ -36,10 +36,20 @@ class MapController extends GameComponent with AstarMapMixin {
   void initBackground() {}
 
   bool testBlock(Vector2 position) {
+    // Check if there's already an obstacle at this position
+    AstarNode node = AstarNode(position.x ~/ tileSize.x, position.y ~/ tileSize.y);
+    bool wasObstacle = !astarMap.obstacleMap[node.x][node.y];
+    
+    // Add obstacle temporarily for testing
     astarMapAddObstacle(position);
     AstarNode? goal = astarMapResolve(
         gameRef.gameSetting.enemySpawn, gameRef.gameSetting.enemyTarget);
-    astarMapRemoveObstacle(position);
+    
+    // Only remove the obstacle if it wasn't there before
+    if (!wasObstacle) {
+      astarMapRemoveObstacle(position);
+    }
+    
     return goal == null ? true : false;
   }
 }

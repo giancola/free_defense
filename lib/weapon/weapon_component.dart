@@ -93,6 +93,9 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
     add(barrel);
 
     onBuilding();
+    // Set preview transparency
+    opacity = 0.5;
+    barrel.opacity = 0.5;
   }
 
   bool blockMap = false;
@@ -154,6 +157,9 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
     radarScanAlert = onEnemyAttack;
     radarScanNothing = null;
     radarCollisionDepth = 0;
+    // Restore full opacity when deployed
+    opacity = 1.0;
+    barrel.opacity = 1.0;
   }
 
   void onEnemyBlock(GameComponent target) {
