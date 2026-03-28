@@ -41,11 +41,16 @@ class GameInstruction {
     switch (instruction) {
       case GameControl.WEAPON_BUILDING:
         WeaponViewWidget.hide();
-        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position);
+        // Use preview = true for WEAPON_BUILDING to ensure the preview component is created
+        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position, isPreview: true);
         if (component != null) {
           controller.add(component);
           controller.buildingWeapon?.removeFromParent();
           controller.buildingWeapon = component;
+          
+          // Set opacity to indicate it's a preview
+          component.setOpacity(0.5);
+          
           component.blockMap = component.collision(controller.gateStart) ||
               component.collision(controller.gateEnd) ||
               controller.gameRef.mapController.testBlock(component.position);
@@ -60,6 +65,7 @@ class GameInstruction {
         break;
       case GameControl.WEAPON_BUILD_DONE:
         // controller.buildingWeapon.buildDone = true;
+        (source as WeaponComponent).setOpacity(1.0);
         controller.gameRef.weaponFactory.onBuildDone(source as WeaponComponent);
         controller.gameRef.mapController.astarMapAddObstacle(source.position);
         controller.buildingWeapon = null;

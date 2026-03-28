@@ -16,8 +16,8 @@ GameSetting gameSetting = GameSetting();
 
 class WeaponFactoryView extends GameComponent {
   late SingleWeaponView selectedWeapon;
-  WeaponComponent? buildWeapon(Vector2 anchor) {
-    if (selectedWeapon.mineEnough)
+  WeaponComponent? buildWeapon(Vector2 anchor, {bool isPreview = false}) {
+    if (isPreview || selectedWeapon.mineEnough)
       return selectedWeapon.build(anchor);
     else {
       return null;

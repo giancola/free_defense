@@ -173,7 +173,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
     if (buildDone == false || dialogVisible == true) {
       Color? color = buildAllowed ? Colors.green[200] : Colors.red[200];
       /*build indicator */
-      canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
+      canvas.drawRect(size.toRect(), Paint()..color = color!.withValues(alpha: 0.3));
       canvas.drawCircle(
           (size / 2).toOffset(),
           range,
@@ -183,7 +183,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
       if (dialogVisible == true) {
         Color? color = buildAllowed ? Colors.blue[200] : Colors.red[200];
         /*build indicator */
-        canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
+        canvas.drawRect(size.toRect(), Paint()..color = color!.withValues(alpha: 0.3));
         canvas.drawCircle(
             (size / 2).toOffset(),
             range * 1.25,
