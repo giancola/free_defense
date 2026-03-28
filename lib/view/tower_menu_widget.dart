@@ -48,8 +48,22 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
           // PointerDeviceKind.mouse with kSecondaryButton
           if (event.buttons == 0) {
             // When all buttons are released, we should hide the menu
-            // Note: event.buttons shows current buttons pressed AFTER the event.
-            // But we can also just close on any release since we assume it's for this menu.
+            
+            // Check if we should finalize building the tower
+            final selectedView = widget.game.weaponFactory.selectedWeapon;
+            if (selectedView.mineEnough && widget.game.gameController.buildingWeapon != null) {
+              final weapon = widget.game.gameController.buildingWeapon!;
+              if (weapon.buildAllowed) {
+                widget.game.gameController.send(weapon, GameControl.WEAPON_BUILD_DONE);
+                weapon.onBuildDone();
+                // Prevent the menu hide logic below from removing it
+                if (widget.game is GameMainWithMenu) {
+                  (widget.game as GameMainWithMenu).highlightedTile = null;
+                }
+                widget.game.gameController.buildingWeapon = null;
+              }
+            }
+
             widget.game.overlays.remove(TowerMenuWidget.name);
             if (widget.game is GameMainWithMenu) {
               final gameWithMenu = (widget.game as GameMainWithMenu);
