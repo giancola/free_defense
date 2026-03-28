@@ -12,6 +12,7 @@ class MapTileComponent extends GameComponent with TapCallbacks {
   MapTileBuildStatus buildStatus = MapTileBuildStatus.Empty;
   GameComponent? refComponent;
   bool ableToBuild = true;
+  bool highlighted = false;
   Sprite? background;
 
   MapTileComponent({
@@ -30,7 +31,16 @@ class MapTileComponent extends GameComponent with TapCallbacks {
         size.toRect(),
         Paint()
           ..style = PaintingStyle.stroke
-          ..color = Colors.green);
+          ..strokeWidth = highlighted ? 2 : 1
+          ..color = highlighted ? Colors.yellow : Colors.green);
+    
+    if (highlighted) {
+      c.drawRect(
+          size.toRect(),
+          Paint()
+            ..style = PaintingStyle.fill
+            ..color = Colors.yellow.withValues(alpha: 0.2));
+    }
   }
 
   @override

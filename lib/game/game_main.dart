@@ -5,6 +5,7 @@ import 'package:freedefense/base/game_component.dart';
 import 'package:freedefense/game/game_controller.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/map/map_controller.dart';
+import 'package:freedefense/map/map_tile_component.dart';
 import 'package:freedefense/view/gamebar_view.dart';
 import 'package:freedefense/view/tower_menu_widget.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
@@ -93,6 +94,23 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
   @override
   void onSecondaryTapDown(SecondaryTapDownEvent event) {
     menuPosition = event.canvasPosition.toOffset();
+    
+    // Highlight the cell under the pointer
+    final components = componentsAtPoint(event.canvasPosition);
+    for (final component in components) {
+      if (component is MapTileComponent) {
+        if (highlightedTile != null) {
+          highlightedTile!.highlighted = false;
+        }
+        highlightedTile = component;
+        highlightedTile!.highlighted = true;
+        
+        // Show current tower preview on the cell
+        gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
+        break;
+      }
+    }
+    
     overlays.add(TowerMenuWidget.name);
   }
 
@@ -100,6 +118,15 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
   void onSecondaryTapUp(SecondaryTapUpEvent event) {
     overlays.remove(TowerMenuWidget.name);
     menuPosition = null;
+    if (highlightedTile != null) {
+      highlightedTile!.highlighted = false;
+      highlightedTile = null;
+    }
+    // Remove preview
+    if (gameController.buildingWeapon != null) {
+      gameController.buildingWeapon!.removeFromParent();
+      gameController.buildingWeapon = null;
+    }
   }
 
   @override
@@ -108,5 +135,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     // enters the Flutter overlay while dragging.
     // overlays.remove(TowerMenuWidget.name);
     // menuPosition = null;
+    // if (highlightedTile != null) {
+    //   highlightedTile!.highlighted = false;
+    //   highlightedTile = null;
+    // }
   }
 }

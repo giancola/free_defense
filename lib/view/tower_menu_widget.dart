@@ -1,7 +1,9 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:freedefense/game/game_controller.dart';
 import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_setting.dart';
+import 'package:freedefense/map/map_tile_component.dart';
 
 class TowerMenuWidget extends StatefulWidget {
   final GameMain game;
@@ -16,16 +18,15 @@ class TowerMenuWidget extends StatefulWidget {
   static const String name = 'tower_menu';
 
   static Widget builder(BuildContext context, GameMain game) {
-    final dynamic gameWithMenu = game;
-    try {
-      final Offset? pos = gameWithMenu.menuPosition;
+    if (game is GameMainWithMenu) {
+      final pos = game.menuPosition;
       if (pos != null) {
         return TowerMenuWidget(
           game: game,
           position: pos,
         );
       }
-    } catch (_) {}
+    }
     return const SizedBox.shrink();
   }
 
@@ -51,7 +52,16 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
             // But we can also just close on any release since we assume it's for this menu.
             widget.game.overlays.remove(TowerMenuWidget.name);
             if (widget.game is GameMainWithMenu) {
-              (widget.game as GameMainWithMenu).menuPosition = null;
+              final gameWithMenu = (widget.game as GameMainWithMenu);
+              gameWithMenu.menuPosition = null;
+              if (gameWithMenu.highlightedTile != null) {
+                gameWithMenu.highlightedTile!.highlighted = false;
+                gameWithMenu.highlightedTile = null;
+              }
+              if (widget.game.gameController.buildingWeapon != null) {
+                widget.game.gameController.buildingWeapon!.removeFromParent();
+                widget.game.gameController.buildingWeapon = null;
+              }
             }
           }
         },
@@ -60,7 +70,7 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.white, width: 1),
             ),
@@ -74,6 +84,13 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
                     onEnter: (_) {
                       setState(() {
                         widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
+                        // Update preview when hovering over different menu items
+                        if (widget.game is GameMainWithMenu) {
+                          final gameWithMenu = widget.game as GameMainWithMenu;
+                          if (gameWithMenu.highlightedTile != null) {
+                            widget.game.gameController.send(gameWithMenu.highlightedTile!, GameControl.WEAPON_BUILDING);
+                          }
+                        }
                       });
                     },
                     onHover: (_) {
@@ -81,6 +98,13 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
                       if (widget.game.weaponFactory.selectedWeapon.weaponType.index != index) {
                         setState(() {
                           widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
+                          // Update preview when hovering over different menu items
+                          if (widget.game is GameMainWithMenu) {
+                            final gameWithMenu = widget.game as GameMainWithMenu;
+                            if (gameWithMenu.highlightedTile != null) {
+                              widget.game.gameController.send(gameWithMenu.highlightedTile!, GameControl.WEAPON_BUILDING);
+                            }
+                          }
                         });
                       }
                     },
@@ -94,7 +118,7 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: widget.game.weaponFactory.selectedWeapon.weaponType.index == index
-                              ? Colors.blue.withOpacity(0.5)
+                              ? Colors.blue.withValues(alpha: 0.5)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -127,4 +151,5 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
 
 mixin GameMainWithMenu on FlameGame {
   Offset? menuPosition;
+  MapTileComponent? highlightedTile;
 }
