@@ -6,6 +6,7 @@ import 'package:freedefense/game/game_main.dart';
 
 // import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_test.dart';
+import 'package:freedefense/view/tower_menu_widget.dart';
 import 'package:freedefense/view/weaponview_widget.dart';
 
 void main() async {
@@ -22,6 +23,7 @@ void main() async {
       overlayBuilderMap: {
         "${WeaponViewWidget.name}-0": WeaponViewWidget.builder,
         "${WeaponViewWidget.name}-1": WeaponViewWidget.builder,
+        TowerMenuWidget.name: TowerMenuWidget.builder,
         'start': _pauseMenuBuilder,
         'gameover': _gameOverBuilder,
       },

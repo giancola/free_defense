@@ -1,13 +1,15 @@
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/material.dart';
 import 'package:freedefense/base/game_component.dart';
 import 'package:freedefense/game/game_controller.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/map/map_controller.dart';
 import 'package:freedefense/view/gamebar_view.dart';
+import 'package:freedefense/view/tower_menu_widget.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
 
-class GameMain extends FlameGame with TapCallbacks {
+class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameMainWithMenu {
   late MapController mapController;
   late WeaponFactoryView weaponFactory;
   late GameController gameController;
@@ -86,5 +88,23 @@ class GameMain extends FlameGame with TapCallbacks {
       gamebarView.mineCollected = 999;
       gamebarView.missedEnemy = 0;
     }
+  }
+
+  @override
+  void onSecondaryTapDown(SecondaryTapDownEvent event) {
+    menuPosition = event.canvasPosition.toOffset();
+    overlays.add(TowerMenuWidget.name);
+  }
+
+  @override
+  void onSecondaryTapUp(SecondaryTapUpEvent event) {
+    overlays.remove(TowerMenuWidget.name);
+    menuPosition = null;
+  }
+
+  @override
+  void onSecondaryTapCancel(SecondaryTapCancelEvent event) {
+    overlays.remove(TowerMenuWidget.name);
+    menuPosition = null;
   }
 }
