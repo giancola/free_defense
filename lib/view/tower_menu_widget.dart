@@ -2,7 +2,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_setting.dart';
-import 'package:freedefense/weapon/weapon_component.dart';
 
 class TowerMenuWidget extends StatefulWidget {
   final GameMain game;
@@ -17,15 +16,16 @@ class TowerMenuWidget extends StatefulWidget {
   static const String name = 'tower_menu';
 
   static Widget builder(BuildContext context, GameMain game) {
-    if (game is GameMainWithMenu) {
-      final menuState = (game as GameMainWithMenu);
-      if (menuState.menuPosition != null) {
+    final dynamic gameWithMenu = game;
+    try {
+      final Offset? pos = gameWithMenu.menuPosition;
+      if (pos != null) {
         return TowerMenuWidget(
           game: game,
-          position: menuState.menuPosition!,
+          position: pos,
         );
       }
-    }
+    } catch (_) {}
     return const SizedBox.shrink();
   }
 
@@ -41,62 +41,83 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
     return Positioned(
       left: widget.position.dx,
       top: widget.position.dy,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white, width: 1),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(weaponSettings.length, (index) {
-              final setting = weaponSettings[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: MouseRegion(
-                  onEnter: (_) {
-                    // Optional: highlight or select on hover
-                    setState(() {
-                      widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
-                    });
-                  },
-                  child: GestureDetector(
-                    onTapUp: (_) {
-                      // Ensure it's selected when clicked (though onEnter should have done it)
+      child: Listener(
+        onPointerUp: (event) {
+          // Check if it's the secondary button (usually right-click)
+          // PointerDeviceKind.mouse with kSecondaryButton
+          if (event.buttons == 0) {
+            // When all buttons are released, we should hide the menu
+            // Note: event.buttons shows current buttons pressed AFTER the event.
+            // But we can also just close on any release since we assume it's for this menu.
+            widget.game.overlays.remove(TowerMenuWidget.name);
+            if (widget.game is GameMainWithMenu) {
+              (widget.game as GameMainWithMenu).menuPosition = null;
+            }
+          }
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white, width: 1),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(weaponSettings.length, (index) {
+                final setting = weaponSettings[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: MouseRegion(
+                    onEnter: (_) {
                       setState(() {
                         widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
                       });
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: widget.game.weaponFactory.selectedWeapon.weaponType.index == index
-                            ? Colors.blue.withOpacity(0.5)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            setting.label,
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${setting.cost}',
-                            style: const TextStyle(color: Colors.yellow, fontSize: 12),
-                          ),
-                        ],
+                    onHover: (_) {
+                      // Added onHover to ensure selection is updated even if mouse button is held
+                      if (widget.game.weaponFactory.selectedWeapon.weaponType.index != index) {
+                        setState(() {
+                          widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
+                        });
+                      }
+                    },
+                    child: GestureDetector(
+                      onTapUp: (_) {
+                        setState(() {
+                          widget.game.weaponFactory.select(widget.game.weaponFactory.weapons[index]);
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: widget.game.weaponFactory.selectedWeapon.weaponType.index == index
+                              ? Colors.blue.withOpacity(0.5)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              setting.label,
+                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${setting.cost}',
+                              style: const TextStyle(color: Colors.yellow, fontSize: 12),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),

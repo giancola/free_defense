@@ -104,7 +104,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
   @override
   void onSecondaryTapCancel(SecondaryTapCancelEvent event) {
-    overlays.remove(TowerMenuWidget.name);
-    menuPosition = null;
+    // DO NOT remove the overlay here, as it may be triggered when the mouse
+    // enters the Flutter overlay while dragging.
+    // overlays.remove(TowerMenuWidget.name);
+    // menuPosition = null;
   }
 }
