@@ -64,8 +64,18 @@ class GameInstruction {
         }
         break;
       case GameControl.WEAPON_BUILD_DONE:
+        // Check for existing weapon at the same position and remove it
+        final newWeapon = source as WeaponComponent;
+        controller.children.whereType<WeaponComponent>().forEach((existing) {
+          if (existing != newWeapon && existing.position.distanceTo(newWeapon.position) < 1.0) {
+            existing.active = false;
+            existing.removeFromParent();
+            controller.gameRef.weaponFactory.onDestroy(existing);
+          }
+        });
+
         // controller.buildingWeapon.buildDone = true;
-        (source as WeaponComponent).setOpacity(1.0);
+        newWeapon.setOpacity(1.0);
         controller.gameRef.weaponFactory.onBuildDone(source as WeaponComponent);
         controller.gameRef.mapController.astarMapAddObstacle(source.position);
         controller.buildingWeapon = null;

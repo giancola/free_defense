@@ -8,7 +8,10 @@ import 'package:freedefense/map/map_controller.dart';
 import 'package:freedefense/map/map_tile_component.dart';
 import 'package:freedefense/view/gamebar_view.dart';
 import 'package:freedefense/view/tower_menu_widget.dart';
+import 'package:freedefense/view/weapon_action_menu_widget.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
+import 'package:freedefense/view/weaponview_widget.dart';
+import 'package:freedefense/weapon/weapon_component.dart';
 
 class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameMainWithMenu {
   late MapController mapController;
@@ -101,21 +104,50 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     
     // Highlight the cell under the pointer
     final components = componentsAtPoint(event.canvasPosition);
+    WeaponComponent? weapon;
+    MapTileComponent? tile;
+    
     for (final component in components) {
+      if (component is WeaponComponent) {
+        weapon = component;
+      }
       if (component is MapTileComponent) {
-        if (highlightedTile != null) {
-          highlightedTile!.highlighted = false;
-        }
-        highlightedTile = component;
-        highlightedTile!.highlighted = true;
-        
-        // Show current tower preview on the cell
-        gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
-        break;
+        tile = component;
       }
     }
-    
-    overlays.add(TowerMenuWidget.name);
+
+    if (weapon != null) {
+      if (overlays.activeOverlays.contains(TowerMenuWidget.name)) {
+        overlays.remove(TowerMenuWidget.name);
+      }
+      
+      selectedWeaponForMenu = weapon;
+      overlays.add(WeaponActionMenuWidget.name);
+      
+      // Clear build preview if any
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile = null;
+      }
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
+      
+      return;
+    }
+
+    if (tile != null) {
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+      }
+      highlightedTile = tile;
+      highlightedTile!.highlighted = true;
+      
+      // Show current tower preview on the cell
+      gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
+      overlays.add(TowerMenuWidget.name);
+    }
   }
 
   @override
@@ -123,8 +155,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     // If the menu is not visible, it means the pointer up event should 
     // be handled here (e.g. released outside the menu).
     // If the menu is visible, it has its own Listener that handles onPointerUp.
-    if (!overlays.activeOverlays.contains(TowerMenuWidget.name)) {
+    if (!overlays.activeOverlays.contains(TowerMenuWidget.name) && !overlays.activeOverlays.contains(WeaponActionMenuWidget.name)) {
       menuPosition = null;
+      selectedWeaponForMenu = null;
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
         highlightedTile = null;

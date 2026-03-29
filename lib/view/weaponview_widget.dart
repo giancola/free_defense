@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flame/widgets.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:freedefense/base/game_component.dart';
 import 'package:freedefense/game/game_controller.dart';
 import 'package:freedefense/game/game_main.dart';
@@ -35,6 +35,9 @@ class WeaponViewWidget {
     }
 
     _selected?.dialogVisible = true;
+    int upgradeCost = (_selected!.setting.cost * 0.5).toInt();
+    int sellPrice = (_selected!.setting.cost * 0.5).toInt();
+    
     return Positioned(
       top: anchor.y,
       left: anchor.x,
@@ -49,42 +52,64 @@ class WeaponViewWidget {
             (imagePath != "")
                 ? Positioned(
                     top: 75,
-                    child: SpriteButton.asset(
-                      path: imagePath ,
-                      pressedPath: imagePath,
-                      width: 45,
-                      height: 45,
-                      onPressed: () {
-                        _selected?.upgradeBarrel();
-                        _selected?.dialogVisible = false;
-                        hide();
-                      },
-                      label: const Text(
-                        'Upgrade',
-                        style: TextStyle(color: Color(0xFF5D275D)),
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SpriteButton.asset(
+                          path: imagePath ,
+                          pressedPath: imagePath,
+                          width: 45,
+                          height: 45,
+                          onPressed: () {
+                            if (game.gamebarView.mineCollected >= upgradeCost) {
+                              game.gamebarView.mineCollected -= upgradeCost;
+                              _selected?.upgradeBarrel();
+                              _selected?.dialogVisible = false;
+                              hide();
+                            }
+                          },
+                          label: const Text(
+                            'Upgrade',
+                            style: TextStyle(color: Color(0xFF5D275D)),
+                          ),
+                        ),
+                        Text(
+                          '$upgradeCost',
+                          style: const TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ))
                 : Container(),
             Positioned(
                 top: 25,
-                child: SpriteButton.asset(
-                  path: 'destroy.png',
-                  pressedPath: 'destroy2.png',
-                  width: 45,
-                  height: 45,
-                  onPressed: () {
-                    _selected?.active = false;
-                    _selected?.removeFromParent();
-                    _selected?.gameRef.gameController.send(
-                        _selected as GameComponent,
-                        GameControl.WEAPON_DESTROYED);
-                    _selected?.dialogVisible = false;
-                    hide();
-                  },
-                  label: const Text(
-                    'Destroy0',
-                    style: TextStyle(color: Color(0xFF5D275D)),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SpriteButton.asset(
+                      path: 'destroy.png',
+                      pressedPath: 'destroy2.png',
+                      width: 45,
+                      height: 45,
+                      onPressed: () {
+                        game.gamebarView.mineCollected += sellPrice;
+                        _selected?.active = false;
+                        _selected?.removeFromParent();
+                        _selected?.gameRef.gameController.send(
+                            _selected as GameComponent,
+                            GameControl.WEAPON_DESTROYED);
+                        _selected?.dialogVisible = false;
+                        hide();
+                      },
+                      label: const Text(
+                        'X',
+                        style: TextStyle(color: Color(0xFF5D275D), fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    Text(
+                      '$sellPrice',
+                      style: const TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ))
           ])),
     );

@@ -4,6 +4,7 @@ import 'package:freedefense/game/game_controller.dart';
 import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/map/map_tile_component.dart';
+import 'package:freedefense/weapon/weapon_component.dart';
 
 class TowerMenuWidget extends StatefulWidget {
   final GameMain game;
@@ -177,4 +178,5 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
 mixin GameMainWithMenu on FlameGame {
   Offset? menuPosition;
   MapTileComponent? highlightedTile;
+  WeaponComponent? selectedWeaponForMenu;
 }
