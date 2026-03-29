@@ -98,7 +98,7 @@ class AstarMap {
           neighbors.add(
               new AstarNode(n.x - 1, n.y - 1, parent: n, cost: costDiagnal));
       }
-      if (n.y < height &&
+      if (n.y < height - 1 &&
           isOnMap(n.x - 1, n.y + 1) &&
           obstacleMap[n.x - 1][n.y + 1]) {
         if (isOnMap(n.x - 1, n.y) &&
@@ -123,7 +123,7 @@ class AstarMap {
           neighbors.add(
               new AstarNode(n.x + 1, n.y - 1, parent: n, cost: costDiagnal));
       }
-      if (n.y < height &&
+      if (n.y < height - 1 &&
           isOnMap(n.x + 1, n.y + 1) &&
           obstacleMap[n.x + 1][n.y + 1]) {
         if (isOnMap(n.x + 1, n.y) &&

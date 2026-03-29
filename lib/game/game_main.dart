@@ -107,6 +107,7 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       selectedWeaponForMenu = null;
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
         highlightedTile = null;
       }
       if (gameController.buildingWeapon != null) {
@@ -127,6 +128,7 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       selectedWeaponForMenu = null;
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
         highlightedTile = null;
       }
       if (gameController.buildingWeapon != null) {
@@ -158,6 +160,7 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       // Clear build preview if any
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
         highlightedTile = null;
       }
       if (gameController.buildingWeapon != null) {
@@ -171,13 +174,19 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     if (tile != null) {
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
       }
       highlightedTile = tile;
       highlightedTile!.highlighted = true;
       
-      // Show current tower preview on the cell
-      gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
-      overlays.add(TowerMenuWidget.name);
+      // Check if placing a tower on this tile blocks the path to the exit
+      if (mapController.testBlock(highlightedTile!.position)) {
+        highlightedTile!.isBlocking = true;
+      } else {
+        // Show current tower preview on the cell
+        gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
+        overlays.add(TowerMenuWidget.name);
+      }
     }
   }
 
@@ -191,6 +200,7 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       selectedWeaponForMenu = null;
       if (highlightedTile != null) {
         highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
         highlightedTile = null;
       }
       // Remove preview
