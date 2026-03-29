@@ -206,15 +206,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
 
   @override
   bool onTapDown(TapDownEvent event) {
-    if (buildDone == false) {
-      if (buildAllowed) {
-        gameRef.gameController.send(this, GameControl.WEAPON_BUILD_DONE);
-        onBuildDone();
-      }
-    } else {
-      // Left click dialog removed as per user request
-    }
-
+    // Left click to build tower disabled as per user request
     return false;
   }
 }

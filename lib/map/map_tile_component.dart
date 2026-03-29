@@ -45,7 +45,7 @@ class MapTileComponent extends GameComponent with TapCallbacks {
 
   @override
   bool onTapDown(TapDownEvent event) {
-    gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
+    // Left click to place tower disabled as per user request
     return false;
   }
 }
