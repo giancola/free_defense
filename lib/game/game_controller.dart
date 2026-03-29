@@ -48,9 +48,13 @@ class GameInstruction {
           // Set opacity to indicate it's a preview
           component.setOpacity(0.5);
           
-          component.blockMap = component.collision(controller.gateStart) ||
-              component.collision(controller.gateEnd) ||
-              controller.gameRef.mapController.testBlock(component.position);
+          // Check if placing a tower on this tile blocks the path to the exit
+          // This matches the check in GameMain.onSecondaryTapDown
+          component.blockMap = controller.gameRef.mapController.testBlock(component.position);
+          
+          // blockEnemy is updated by radarScanAlert/Nothing in WeaponComponent.onBuilding
+          // but we can also set an initial value
+          component.blockEnemy = false; 
         }
         break;
       case GameControl.WEAPON_SELECTED:
