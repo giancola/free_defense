@@ -43,20 +43,31 @@ class _TowerMenuWidgetState extends State<TowerMenuWidget> {
       left: widget.position.dx,
       top: widget.position.dy,
       child: Listener(
+        onPointerDown: (event) {
+          // Track when the pointer is down over the menu to distinguish between
+          // release over menu vs release outside (which is handled by Flame)
+        },
         onPointerUp: (event) {
-          // Check if it's the secondary button (usually right-click)
-          // PointerDeviceKind.mouse with kSecondaryButton
+          // If all buttons are released (buttons == 0), it means the right-click was released
           if (event.buttons == 0) {
-            // When all buttons are released, we should hide the menu
-            
             // Check if we should finalize building the tower
             final selectedView = widget.game.weaponFactory.selectedWeapon;
-            if (selectedView.mineEnough && widget.game.gameController.buildingWeapon != null) {
-              final weapon = widget.game.gameController.buildingWeapon!;
-              if (weapon.buildAllowed) {
-                widget.game.gameController.send(weapon, GameControl.WEAPON_BUILD_DONE);
-                weapon.onBuildDone();
-                // Prevent the menu hide logic below from removing it
+            final buildingWeapon = widget.game.gameController.buildingWeapon;
+            
+            print('TowerMenu: PointerUp, buttons == 0');
+            print('TowerMenu: current gold: ${widget.game.gamebarView.mineCollected}');
+            print('TowerMenu: weapon cost: ${selectedView.cost}');
+            print('TowerMenu: mineEnough: ${widget.game.gamebarView.mineCollected >= selectedView.cost}');
+            print('TowerMenu: buildingWeapon: ${buildingWeapon != null}');
+            
+            if (widget.game.gamebarView.mineCollected >= selectedView.cost && buildingWeapon != null) {
+              print('TowerMenu: buildAllowed: ${buildingWeapon.buildAllowed} (blockMap: ${buildingWeapon.blockMap}, blockEnemy: ${buildingWeapon.blockEnemy})');
+              if (buildingWeapon.buildAllowed) {
+                print('TowerMenu: Finalizing build');
+                widget.game.gameController.send(buildingWeapon, GameControl.WEAPON_BUILD_DONE);
+                buildingWeapon.onBuildDone();
+                
+                // Clear highlighted tile in GameMain to prevent the cleanup logic below from removing the weapon
                 if (widget.game is GameMainWithMenu) {
                   (widget.game as GameMainWithMenu).highlightedTile = null;
                 }

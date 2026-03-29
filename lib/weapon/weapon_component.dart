@@ -169,6 +169,14 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
   }
 
   @override
+  void update(double dt) {
+    if (!gameRef.started) {
+      return;
+    }
+    super.update(dt);
+  }
+
+  @override
   void render(Canvas canvas) {
     if (buildDone == false || dialogVisible == true) {
       Color? color = buildAllowed ? Colors.green[200] : Colors.red[200];

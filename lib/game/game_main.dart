@@ -63,6 +63,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
     setting.enemies.load();
 
+    // Initial gold for prepositioning
+    gamebarView.mineCollected = 999;
+
     loadDone = true;
     int d = currentTimeMillis() - timeRecord;
     print("GameMain onLoad done takke $d");
@@ -86,8 +89,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     if (loadDone) {
       gameController.send(GameComponent(), GameControl.ENEMY_SPAWN);
       gamebarView.killedEnemy = 0;
-      gamebarView.mineCollected = 999;
+      // gamebarView.mineCollected = 999; (Already set in onLoad for prepositioning)
       gamebarView.missedEnemy = 0;
+      started = true;
     }
   }
 
@@ -116,16 +120,20 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
   @override
   void onSecondaryTapUp(SecondaryTapUpEvent event) {
-    overlays.remove(TowerMenuWidget.name);
-    menuPosition = null;
-    if (highlightedTile != null) {
-      highlightedTile!.highlighted = false;
-      highlightedTile = null;
-    }
-    // Remove preview
-    if (gameController.buildingWeapon != null) {
-      gameController.buildingWeapon!.removeFromParent();
-      gameController.buildingWeapon = null;
+    // If the menu is not visible, it means the pointer up event should 
+    // be handled here (e.g. released outside the menu).
+    // If the menu is visible, it has its own Listener that handles onPointerUp.
+    if (!overlays.activeOverlays.contains(TowerMenuWidget.name)) {
+      menuPosition = null;
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile = null;
+      }
+      // Remove preview
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
     }
   }
 
