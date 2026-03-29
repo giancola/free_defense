@@ -98,7 +98,43 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
   }
 
   @override
+  void onTapDown(TapDownEvent event) {
+    if (overlays.activeOverlays.contains(TowerMenuWidget.name) || 
+        overlays.activeOverlays.contains(WeaponActionMenuWidget.name)) {
+      overlays.remove(TowerMenuWidget.name);
+      overlays.remove(WeaponActionMenuWidget.name);
+      menuPosition = null;
+      selectedWeaponForMenu = null;
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile = null;
+      }
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
+    }
+  }
+
+  @override
   void onSecondaryTapDown(SecondaryTapDownEvent event) {
+    // If a menu is already open, close it before checking for a new one
+    if (overlays.activeOverlays.contains(TowerMenuWidget.name) || 
+        overlays.activeOverlays.contains(WeaponActionMenuWidget.name)) {
+      overlays.remove(TowerMenuWidget.name);
+      overlays.remove(WeaponActionMenuWidget.name);
+      menuPosition = null;
+      selectedWeaponForMenu = null;
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile = null;
+      }
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
+    }
+
     menuPosition = event.canvasPosition.toOffset();
     
     // Highlight the cell under the pointer
@@ -116,10 +152,6 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     }
 
     if (weapon != null) {
-      if (overlays.activeOverlays.contains(TowerMenuWidget.name)) {
-        overlays.remove(TowerMenuWidget.name);
-      }
-      
       selectedWeaponForMenu = weapon;
       overlays.add(WeaponActionMenuWidget.name);
       
