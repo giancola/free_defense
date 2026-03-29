@@ -212,12 +212,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
         onBuildDone();
       }
     } else {
-      if (active) {
-        gameRef.gameController.send(this, GameControl.WEAPON_SHOW_ACTION);
-      } else {
-        return true;
-        // gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
-      }
+      // Left click dialog removed as per user request
     }
 
     return false;

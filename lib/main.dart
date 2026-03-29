@@ -8,7 +8,6 @@ import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_test.dart';
 import 'package:freedefense/view/tower_menu_widget.dart';
 import 'package:freedefense/view/weapon_action_menu_widget.dart';
-import 'package:freedefense/view/weaponview_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +21,6 @@ void main() async {
     GameWidget<GameMain>(
       game: game,
       overlayBuilderMap: {
-        "${WeaponViewWidget.name}-0": WeaponViewWidget.builder,
-        "${WeaponViewWidget.name}-1": WeaponViewWidget.builder,
         TowerMenuWidget.name: TowerMenuWidget.builder,
         WeaponActionMenuWidget.name: WeaponActionMenuWidget.builder,
         'start': _pauseMenuBuilder,

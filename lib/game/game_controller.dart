@@ -10,7 +10,6 @@ import 'package:freedefense/enemy/enemy_component.dart';
 import 'package:freedefense/enemy/enemy_factory.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
-import 'package:freedefense/view/weaponview_widget.dart';
 import 'package:freedefense/weapon/weapon_component.dart';
 
 import '../neutral/neutral_component.dart';
@@ -23,7 +22,6 @@ enum GameControl {
   /*change type */
   WEAPON_BUILD_DONE,
   WEAPON_DESTROYED,
-  WEAPON_SHOW_ACTION,
   WEAPON_SHOW_PROFILE,
   ENEMY_SPAWN,
   ENEMY_MISSED,
@@ -40,7 +38,6 @@ class GameInstruction {
   void process(GameController controller) {
     switch (instruction) {
       case GameControl.WEAPON_BUILDING:
-        WeaponViewWidget.hide();
         // Use preview = true for WEAPON_BUILDING to ensure the preview component is created
         WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position, isPreview: true);
         if (component != null) {
@@ -57,7 +54,6 @@ class GameInstruction {
         }
         break;
       case GameControl.WEAPON_SELECTED:
-        WeaponViewWidget.hide();
         controller.gameRef.weaponFactory.select(source as SingleWeaponView);
         if (controller.buildingWeapon != null) {
           controller.send(controller.buildingWeapon!, GameControl.WEAPON_BUILDING);
@@ -82,7 +78,6 @@ class GameInstruction {
         controller.processEnemySmartMove();
         break;
       case GameControl.WEAPON_DESTROYED:
-        WeaponViewWidget.hide();
         controller.gameRef.weaponFactory.onDestroy(source as WeaponComponent);
         controller.gameRef.mapController.astarMapRemoveObstacle(source.position);
         controller.processEnemySmartMove();
@@ -98,9 +93,6 @@ class GameInstruction {
         break;
       case GameControl.ENEMY_NEXT_WAVE:
         controller.gameRef.gamebarView.wave += 1;
-        break;
-      case GameControl.WEAPON_SHOW_ACTION:
-        WeaponViewWidget.show(source as WeaponComponent);
         break;
       case GameControl.GAME_OVER:
         controller.gameRef.overlays.add('gameover');

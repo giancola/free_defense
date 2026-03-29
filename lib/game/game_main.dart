@@ -10,7 +10,6 @@ import 'package:freedefense/view/gamebar_view.dart';
 import 'package:freedefense/view/tower_menu_widget.dart';
 import 'package:freedefense/view/weapon_action_menu_widget.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
-import 'package:freedefense/view/weaponview_widget.dart';
 import 'package:freedefense/weapon/weapon_component.dart';
 
 class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameMainWithMenu {
