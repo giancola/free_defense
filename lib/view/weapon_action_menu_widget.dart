@@ -21,12 +21,39 @@ class WeaponActionMenuWidget extends StatelessWidget {
 
   static Widget builder(BuildContext context, GameMain game) {
     if (game is GameMainWithMenu) {
-      final pos = game.menuPosition;
+      Offset? pos = game.menuPosition;
       final weapon = game.selectedWeaponForMenu;
       if (pos != null && weapon != null) {
+        final screenSize = MediaQuery.of(context).size;
+        
+        // Estimated menu dimensions (including padding)
+        const double menuWidth = 120;
+        const double menuHeight = 100;
+        const double margin = 20;
+        const double edgePadding = 10;
+        
+        double left = pos.dx + margin;
+        double top = pos.dy + margin;
+        
+        // Flip horizontally if it goes off screen to the right
+        if (left + menuWidth > screenSize.width - edgePadding) {
+          left = pos.dx - menuWidth - margin;
+        }
+        
+        // Flip vertically if it goes off screen to the bottom
+        if (top + menuHeight > screenSize.height - edgePadding) {
+          top = pos.dy - menuHeight - margin;
+        }
+        
+        // Final safety bounds
+        if (left < edgePadding) left = edgePadding;
+        if (top < edgePadding) top = edgePadding;
+        if (left + menuWidth > screenSize.width - edgePadding) left = screenSize.width - menuWidth - edgePadding;
+        if (top + menuHeight > screenSize.height - edgePadding) top = screenSize.height - menuHeight - edgePadding;
+        
         return WeaponActionMenuWidget(
           game: game,
-          position: pos,
+          position: Offset(left, top),
           weapon: weapon,
         );
       }
