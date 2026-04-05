@@ -6,8 +6,7 @@ import 'package:freedefense/game/game_main.dart';
 
 // import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_test.dart';
-import 'package:freedefense/view/tower_menu_widget.dart';
-import 'package:freedefense/view/weapon_action_menu_widget.dart';
+import 'package:freedefense/view/weaponview_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,8 +20,8 @@ void main() async {
     GameWidget<GameMain>(
       game: game,
       overlayBuilderMap: {
-        TowerMenuWidget.name: TowerMenuWidget.builder,
-        WeaponActionMenuWidget.name: WeaponActionMenuWidget.builder,
+        "${WeaponViewWidget.name}-0": WeaponViewWidget.builder,
+        "${WeaponViewWidget.name}-1": WeaponViewWidget.builder,
         'start': _pauseMenuBuilder,
         'gameover': _gameOverBuilder,
       },
@@ -32,29 +31,24 @@ void main() async {
 }
 
 Widget _pauseMenuBuilder(BuildContext buildContext, GameMain game) {
-  return Align(
-    alignment: Alignment.topCenter,
-    child: Container(
-      width: 100,
-      height: 60,
-      margin: const EdgeInsets.only(top: 10),
-      color: Colors.orange,
-      child: Center(
+  return Center(
+      child: Container(
+    width: 100,
+    height: 100,
+    color: Colors.orange,
+    child: Center(
         child: TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.all(8.0),
-            textStyle: const TextStyle(fontSize: 20),
-          ),
-          onPressed: () {
-            game.start();
-            game.overlays.remove('start');
-          },
-          child: const Text('Start'),
-        ),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white, padding: const EdgeInsets.all(16.0),
+        textStyle: const TextStyle(fontSize: 20),
       ),
-    ),
-  );
+      onPressed: () {
+        game.start();
+        game.overlays.remove('start');
+      },
+      child: const Text('Start'),
+    )),
+  ));
 }
 
 Widget _gameOverBuilder(BuildContext buildContext, GameMain game) {

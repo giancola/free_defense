@@ -169,19 +169,11 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
   }
 
   @override
-  void update(double dt) {
-    if (!gameRef.started) {
-      return;
-    }
-    super.update(dt);
-  }
-
-  @override
   void render(Canvas canvas) {
     if (buildDone == false || dialogVisible == true) {
       Color? color = buildAllowed ? Colors.green[200] : Colors.red[200];
       /*build indicator */
-      canvas.drawRect(size.toRect(), Paint()..color = color!.withValues(alpha: 0.3));
+      canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
       canvas.drawCircle(
           (size / 2).toOffset(),
           range,
@@ -191,7 +183,7 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
       if (dialogVisible == true) {
         Color? color = buildAllowed ? Colors.blue[200] : Colors.red[200];
         /*build indicator */
-        canvas.drawRect(size.toRect(), Paint()..color = color!.withValues(alpha: 0.3));
+        canvas.drawRect(size.toRect(), Paint()..color = color!.withOpacity(0.3));
         canvas.drawCircle(
             (size / 2).toOffset(),
             range * 1.25,
@@ -206,7 +198,20 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
 
   @override
   bool onTapDown(TapDownEvent event) {
-    // Left click to build tower disabled as per user request
+    if (buildDone == false) {
+      if (buildAllowed) {
+        gameRef.gameController.send(this, GameControl.WEAPON_BUILD_DONE);
+        onBuildDone();
+      }
+    } else {
+      if (active) {
+        gameRef.gameController.send(this, GameControl.WEAPON_SHOW_ACTION);
+      } else {
+        return true;
+        // gameRef.gameController.send(this, GameControl.WEAPON_SHOW_PROFILE);
+      }
+    }
+
     return false;
   }
 }
