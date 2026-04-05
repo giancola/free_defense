@@ -10,7 +10,6 @@ import 'package:freedefense/enemy/enemy_component.dart';
 import 'package:freedefense/enemy/enemy_factory.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
-import 'package:freedefense/view/weaponview_widget.dart';
 import 'package:freedefense/weapon/weapon_component.dart';
 
 import '../neutral/neutral_component.dart';
@@ -23,7 +22,6 @@ enum GameControl {
   /*change type */
   WEAPON_BUILD_DONE,
   WEAPON_DESTROYED,
-  WEAPON_SHOW_ACTION,
   WEAPON_SHOW_PROFILE,
   ENEMY_SPAWN,
   ENEMY_MISSED,
@@ -40,33 +38,50 @@ class GameInstruction {
   void process(GameController controller) {
     switch (instruction) {
       case GameControl.WEAPON_BUILDING:
-        WeaponViewWidget.hide();
-        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position);
+        // Use preview = true for WEAPON_BUILDING to ensure the preview component is created
+        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position, isPreview: true);
         if (component != null) {
           controller.add(component);
           controller.buildingWeapon?.removeFromParent();
           controller.buildingWeapon = component;
-          component.blockMap = component.collision(controller.gateStart) ||
-              component.collision(controller.gateEnd) ||
-              controller.gameRef.mapController.testBlock(component.position);
+          
+          // Set opacity to indicate it's a preview
+          component.setOpacity(0.5);
+          
+          // Check if placing a tower on this tile blocks the path to the exit
+          // This matches the check in GameMain.onSecondaryTapDown
+          component.blockMap = controller.gameRef.mapController.testBlock(component.position);
+          
+          // blockEnemy is updated by radarScanAlert/Nothing in WeaponComponent.onBuilding
+          // but we can also set an initial value
+          component.blockEnemy = false; 
         }
         break;
       case GameControl.WEAPON_SELECTED:
-        WeaponViewWidget.hide();
         controller.gameRef.weaponFactory.select(source as SingleWeaponView);
         if (controller.buildingWeapon != null) {
           controller.send(controller.buildingWeapon!, GameControl.WEAPON_BUILDING);
         }
         break;
       case GameControl.WEAPON_BUILD_DONE:
+        // Check for existing weapon at the same position and remove it
+        final newWeapon = source as WeaponComponent;
+        controller.children.whereType<WeaponComponent>().forEach((existing) {
+          if (existing != newWeapon && existing.position.distanceTo(newWeapon.position) < 1.0) {
+            existing.active = false;
+            existing.removeFromParent();
+            controller.gameRef.weaponFactory.onDestroy(existing);
+          }
+        });
+
         // controller.buildingWeapon.buildDone = true;
+        newWeapon.setOpacity(1.0);
         controller.gameRef.weaponFactory.onBuildDone(source as WeaponComponent);
         controller.gameRef.mapController.astarMapAddObstacle(source.position);
         controller.buildingWeapon = null;
         controller.processEnemySmartMove();
         break;
       case GameControl.WEAPON_DESTROYED:
-        WeaponViewWidget.hide();
         controller.gameRef.weaponFactory.onDestroy(source as WeaponComponent);
         controller.gameRef.mapController.astarMapRemoveObstacle(source.position);
         controller.processEnemySmartMove();
@@ -82,9 +97,6 @@ class GameInstruction {
         break;
       case GameControl.ENEMY_NEXT_WAVE:
         controller.gameRef.gamebarView.wave += 1;
-        break;
-      case GameControl.WEAPON_SHOW_ACTION:
-        WeaponViewWidget.show(source as WeaponComponent);
         break;
       case GameControl.GAME_OVER:
         controller.gameRef.overlays.add('gameover');

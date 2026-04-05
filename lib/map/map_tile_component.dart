@@ -12,6 +12,8 @@ class MapTileComponent extends GameComponent with TapCallbacks {
   MapTileBuildStatus buildStatus = MapTileBuildStatus.Empty;
   GameComponent? refComponent;
   bool ableToBuild = true;
+  bool highlighted = false;
+  bool isBlocking = false;
   Sprite? background;
 
   MapTileComponent({
@@ -26,16 +28,28 @@ class MapTileComponent extends GameComponent with TapCallbacks {
     super.render(c);
     // if (background != null) {
     // background!.renderRect(c, size.toRect());
+
+    Color highlightColor = isBlocking ? Colors.red : Colors.yellow;
+    
     c.drawRect(
         size.toRect(),
         Paint()
           ..style = PaintingStyle.stroke
-          ..color = Colors.green);
+          ..strokeWidth = highlighted ? 2 : 1
+          ..color = highlighted ? highlightColor : Colors.green);
+    
+    if (highlighted) {
+      c.drawRect(
+          size.toRect(),
+          Paint()
+            ..style = PaintingStyle.fill
+            ..color = highlightColor.withValues(alpha: 0.2));
+    }
   }
 
   @override
   bool onTapDown(TapDownEvent event) {
-    gameRef.gameController.send(this, GameControl.WEAPON_BUILDING);
+    // Left click to place tower disabled as per user request
     return false;
   }
 }

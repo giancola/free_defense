@@ -36,6 +36,19 @@ class AstarMap {
   }
 
   AstarNode? astar(AstarNode start, AstarNode goal) {
+    // If start and goal are the same, path is found (length 0).
+    if (start == goal) {
+      return start;
+    }
+
+    // If either start or goal is an obstacle, it's blocked.
+    if (!isOnMap(start.x, start.y) || !obstacleMap[start.x][start.y]) {
+      return null;
+    }
+    if (!isOnMap(goal.x, goal.y) || !obstacleMap[goal.x][goal.y]) {
+      return null;
+    }
+
     List<AstarNode> closed = [];
     List<AstarNode> open = [start];
 
@@ -98,7 +111,7 @@ class AstarMap {
           neighbors.add(
               new AstarNode(n.x - 1, n.y - 1, parent: n, cost: costDiagnal));
       }
-      if (n.y < height &&
+      if (n.y < height - 1 &&
           isOnMap(n.x - 1, n.y + 1) &&
           obstacleMap[n.x - 1][n.y + 1]) {
         if (isOnMap(n.x - 1, n.y) &&
@@ -123,7 +136,7 @@ class AstarMap {
           neighbors.add(
               new AstarNode(n.x + 1, n.y - 1, parent: n, cost: costDiagnal));
       }
-      if (n.y < height &&
+      if (n.y < height - 1 &&
           isOnMap(n.x + 1, n.y + 1) &&
           obstacleMap[n.x + 1][n.y + 1]) {
         if (isOnMap(n.x + 1, n.y) &&
