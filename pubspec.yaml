@@ -32,3 +32,6 @@ flutter:
     - assets/weaponParams.json
     - assets/enemyParams.json
     - assets/spacescape/images/
+    - assets/spacescape/audio/
+    - assets/spacescape/fonts/BungeeInline/
+    - assets/tiles/
