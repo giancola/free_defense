@@ -32,7 +32,15 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
   @override
   void onGameResize(Vector2 size) {
-    if (!loadDone) setting.setScreenSize(size);
+    setting.setScreenSize(size);
+    if (loadDone) {
+      mapController.onResize(setting.mapPosition, setting.mapSize, setting.mapTileSize);
+      gameController.onResize(setting.mapPosition, setting.mapSize, setting.mapTileSize);
+      gamebarView.onResize(setting.barPosition, setting.barSize);
+      weaponFactory.onResize(
+          Vector2(setting.viewSize.x * (1 / 3), setting.viewPosition.y),
+          Vector2(setting.viewSize.x * (2 / 3) - setting.mapTileSize.x, setting.viewSize.y * (2 / 3)));
+    }
     super.onGameResize(size);
   }
 
@@ -68,6 +76,7 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     // Initial gold for prepositioning
     gamebarView.mineCollected = 999;
 
+    setting.loadDone = true;
     loadDone = true;
     int d = currentTimeMillis() - timeRecord;
     print("GameMain onLoad done takke $d");

@@ -42,6 +42,17 @@ class WeaponFactoryView extends GameComponent {
     select(weapons[0]);
   }
 
+  void onResize(Vector2 position, Vector2 size) {
+    this.position = position;
+    this.size = size;
+    for (int i = 0; i < weapons.length; i++) {
+      weapons[i].onResize(
+        Vector2(size.x * (i / 3 + 1 / 4), size.y / 3),
+        Vector2(size.x / 4, size.y)
+      );
+    }
+  }
+
   SingleWeaponView _loadSingleView(int slot, WeaponType type) {
     SingleWeaponView view = SingleWeaponView(
         position: Vector2(size.x * (slot / 3 + 1 / 4), size.y / 3),
@@ -126,6 +137,27 @@ class SingleWeaponView extends GameComponent with TapCallbacks {
     return super.onLoad();
   }
 
+  void onResize(Vector2 position, Vector2 size) {
+    this.position = position;
+    this.size = size;
+    Vector2 base = gameSetting.mapTileSize * 0.9;
+    Vector2 center = size / 2, wp, ws, mp, ms;
+    if (size.x >= size.y) {
+      wp = Vector2(center.x - (base.x * 1.5 / 6), center.y);
+      ws = base;
+      mp = Vector2(center.x + (base.x * 3 / 6), center.y);
+      ms = Vector2(base.x / 2, base.y);
+    } else {
+      wp = Vector2(center.x, center.y - (base.y * 1.5 / 6));
+      ws = base;
+      mp = Vector2(center.x, center.y + (base.y * 3 / 6));
+      ms = Vector2(base.x, base.y / 2);
+    }
+    weapon.position = wp;
+    weapon.size = ws;
+    mine.position = mp;
+    mine.size = ms;
+  }
   bool _selected = false;
   bool get selected => _selected;
   set selected(bool b) {

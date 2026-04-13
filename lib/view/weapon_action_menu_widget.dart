@@ -63,8 +63,8 @@ class WeaponActionMenuWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int upgradeCost = (weapon.setting.cost * 0.5).toInt();
-    int sellPrice = (weapon.setting.cost * 0.5).toInt();
+    int upgradeCost = (weapon.weaponSetting.cost * 0.5).toInt();
+    int sellPrice = (weapon.weaponSetting.cost * 0.5).toInt();
     bool canUpgrade = weapon.barrelModelIndex < 2 && game.gamebarView.mineCollected >= upgradeCost;
 
     return Positioned(

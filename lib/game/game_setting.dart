@@ -68,11 +68,31 @@ class GameSetting {
   }
 
   void optimizeMapGrid(Vector2 size) {
-    if (preferredMapGrid != null) {
-      mapGrid = preferredMapGrid!;
+    if (loadDone) {
+      // If game is already loaded, we keep mapGrid fixed and only update layout sizes/positions
+      _calculateLayout(size);
     } else {
-      mapGrid = Vector2(10, 10);
+      // First time initialization
+      if (preferredMapGrid != null) {
+        mapGrid = preferredMapGrid!;
+      } else {
+        mapGrid = Vector2(10, 10);
+      }
+      double grid = math.min(mapGrid.x, mapGrid.y);
+      Vector2 optSize = size / grid;
+      grid = math.min(optSize.x, optSize.y);
+
+      _calculateLayout(size);
+
+      if (preferredMapGrid == null) {
+        mapGrid = mapSize / grid;
+        mapGrid = Vector2(mapGrid.x.toInt().toDouble(), mapGrid.y.toInt().toDouble());
+      }
+      mapTileSize = dotDivide(mapSize, mapGrid);
     }
+  }
+
+  void _calculateLayout(Vector2 size) {
     double grid = math.min(mapGrid.x, mapGrid.y);
     Vector2 optSize = size / grid;
     grid = math.min(optSize.x, optSize.y);
@@ -85,13 +105,11 @@ class GameSetting {
     /*Map in the middle*/
     mapPosition = Vector2(size.x / 2, size.y / 2);
     mapSize = Vector2(size.x - 2, size.y - barSize.y - viewSize.y - 2);
-    
-    if (preferredMapGrid == null) {
-      mapGrid = mapSize / grid;
-      mapGrid = Vector2(mapGrid.x.toInt().toDouble(), mapGrid.y.toInt().toDouble());
-    }
+
     mapTileSize = dotDivide(mapSize, mapGrid);
   }
+
+  bool loadDone = false;
 
   Future<void> onLoad() async {
     await neutral.load();

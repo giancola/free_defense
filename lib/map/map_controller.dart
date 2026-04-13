@@ -22,6 +22,19 @@ class MapController extends GameComponent with AstarMapMixin {
     rebuildGrid();
   }
 
+  void onResize(Vector2 position, Vector2 size, Vector2 tileSize) {
+    this.position = position;
+    this.size = size;
+    this.tileSize = tileSize;
+    children.whereType<MapTileComponent>().forEach((tile) {
+      // Find original grid position
+      int w = (tile.position.x / tile.size.x).floor();
+      int h = (tile.position.y / tile.size.y).floor();
+      tile.size = tileSize;
+      tile.position = Vector2(w * tileSize.x, h * tileSize.y) + (tileSize / 2);
+    });
+  }
+
   void rebuildGrid() {
     // Clear existing MapTileComponents if any
     final existingTiles = children.whereType<MapTileComponent>().toList();

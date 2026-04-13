@@ -81,18 +81,25 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
   late double range;
   late double fireInterval;
   late BarrelComponent barrel;
-  late WeaponSetting setting;
+  late WeaponSetting weaponSetting;
   int barrelModelIndex = 0;
 
   WeaponComponent({
     required Vector2 position,
-    required WeaponSetting weaponSetting,
+    required this.weaponSetting,
     double life = 100,
   }) : super(position: position, size: weaponSetting.size, priority: 20) {
     barrel = BarrelComponent(position: size / 2, size: size);
     add(barrel);
 
     onBuilding();
+  }
+
+  @override
+  set size(Vector2 size) {
+    super.size = size;
+    barrel.size = size;
+    barrel.position = size / 2;
   }
 
   bool blockMap = false;
@@ -127,12 +134,12 @@ class WeaponComponent extends GameComponent with TapCallbacks, Radar<EnemyCompon
 
   void upgradeBarrel() {
     barrelModelIndex++;
-    barrel.sprite = setting.barrel[barrelModelIndex];
-    range *= setting.rangeDelta;
+    barrel.sprite = weaponSetting.barrel[barrelModelIndex];
+    range *= weaponSetting.rangeDelta;
     radarRange = range;
-    fireInterval /= setting.fireIntervalDelta;
-    setting.currentDamage *= setting.damageDelta;
-    setting.bulletSpeed *= setting.bulletSpeedDelta;
+    fireInterval /= weaponSetting.fireIntervalDelta;
+    weaponSetting.currentDamage *= weaponSetting.damageDelta;
+    weaponSetting.bulletSpeed *= weaponSetting.bulletSpeedDelta;
 
     //rotateSpeedDelta = weaponParam['rotateSpeedDelta'];
   }

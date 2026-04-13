@@ -168,6 +168,24 @@ class GameController extends GameComponent {
     return null;
   }
 
+  void onResize(Vector2 position, Vector2 size, Vector2 tileSize) {
+    this.position = position;
+    this.size = size;
+    rebuildGates();
+    children.whereType<WeaponComponent>().forEach((weapon) {
+      // Reposition based on grid
+      int w = (weapon.position.x / weapon.size.x).floor();
+      int h = (weapon.position.y / weapon.size.y).floor();
+      weapon.size = tileSize;
+      weapon.position = Vector2(w * tileSize.x, h * tileSize.y) + (tileSize / 2);
+    });
+    // Enemies are trickier because they are moving.
+    // For now, let's just scale their size.
+    children.whereType<EnemyComponent>().forEach((enemy) {
+      enemy.size = gameSetting.dotMultiple(gameSetting.enemySizeCale, tileSize);
+    });
+  }
+
   void rebuildGates() async {
     // Remove existing gates if they exist
     if (gateStart.parent != null) {

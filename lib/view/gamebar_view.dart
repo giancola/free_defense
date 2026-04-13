@@ -88,4 +88,14 @@ class GamebarView extends GameComponent {
     _mineCollected = n;
     mine.number = _mineCollected;
   }
+
+  void onResize(Vector2 position, Vector2 size) {
+    this.position = position;
+    this.size = size;
+    waveStatus.position = (size / 2);
+    missedStatus.position = (size / 2)..x = (size.x * (1 / 8));
+    killedStatus.position = (size / 2)..x = (size.x * (3 / 8));
+    mine.position = (size / 2)..x = (size.x * (6 / 8));
+    mine.size = Vector2(size.y * 1.5, size.y) * 0.7;
+  }
 }
