@@ -23,6 +23,7 @@ class GameSetting {
   NeutralSetting neutral = NeutralSetting();
 
   Vector2 mapGrid = Vector2(10, 10);
+  Vector2? preferredMapGrid;
   late Vector2 mapPosition;
   late Vector2 mapSize;
   late Vector2 viewPosition;
@@ -60,13 +61,18 @@ class GameSetting {
 
     enemySize = dotMultiple(enemySizeCale, mapTileSize);
     enemySpawn = Vector2(0, 0) + (mapTileSize / 2);
-    enemyTarget = (mapSize) - (mapTileSize / 2);
+    enemyTarget = Vector2(mapGrid.x - 1, mapGrid.y - 1);
+    enemyTarget = dotMultiple(enemyTarget, mapTileSize) + (mapTileSize / 2);
 
     print('screenSize $screenSize,  mapGrid $mapGrid, mapTileSize $mapTileSize');
   }
 
   void optimizeMapGrid(Vector2 size) {
-    mapGrid = Vector2(10, 10);
+    if (preferredMapGrid != null) {
+      mapGrid = preferredMapGrid!;
+    } else {
+      mapGrid = Vector2(10, 10);
+    }
     double grid = math.min(mapGrid.x, mapGrid.y);
     Vector2 optSize = size / grid;
     grid = math.min(optSize.x, optSize.y);
@@ -79,8 +85,11 @@ class GameSetting {
     /*Map in the middle*/
     mapPosition = Vector2(size.x / 2, size.y / 2);
     mapSize = Vector2(size.x - 2, size.y - barSize.y - viewSize.y - 2);
-    mapGrid = mapSize / grid;
-    mapGrid = Vector2(mapGrid.x.toInt().toDouble(), mapGrid.y.toInt().toDouble());
+    
+    if (preferredMapGrid == null) {
+      mapGrid = mapSize / grid;
+      mapGrid = Vector2(mapGrid.x.toInt().toDouble(), mapGrid.y.toInt().toDouble());
+    }
     mapTileSize = dotDivide(mapSize, mapGrid);
   }
 
