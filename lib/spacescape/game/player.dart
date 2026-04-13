@@ -120,15 +120,14 @@ class Player extends SpriteComponent
   };
 
   @override
-  bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (!_keysWatched.contains(event.logicalKey)) return true;
+
     // Set this to zero first - if the user releases all keys pressed, then
     // the set will be empty and our vector non-zero.
     keyboardDelta.setZero();
 
-    if (!_keysWatched.contains(event.logicalKey)) return true;
-
-    if (event is RawKeyDownEvent &&
-        !event.repeat &&
+    if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.space) {
       // pew pew!
       joystickAction();

@@ -87,13 +87,43 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     // print(test.length);
   }
 
-  void start() {
+  @override
+  void render(Canvas canvas) {
+    if (started) {
+      super.render(canvas);
+    } else {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = Colors.black,
+      );
+    }
+  }
+
+  void create() {
     if (loadDone) {
-      gameController.send(GameComponent(), GameControl.ENEMY_SPAWN);
-      gamebarView.killedEnemy = 0;
-      // gamebarView.mineCollected = 999; (Already set in onLoad for prepositioning)
-      gamebarView.missedEnemy = 0;
+      /* Re-initialize map and game controller with potentially new grid settings */
+      mapController.mapGrid = setting.mapGrid;
+      mapController.tileSize = setting.mapTileSize;
+      mapController.position = setting.mapPosition;
+      mapController.size = setting.mapSize;
+      mapController.rebuildGrid();
+
+      gameController.position = setting.mapPosition;
+      gameController.size = setting.mapSize;
+      gameController.rebuildGates();
+
       started = true;
+      gamebarView.killedEnemy = 0;
+      gamebarView.missedEnemy = 0;
+      
+      // Show start button
+      overlays.add('start');
+    }
+  }
+
+  void start() {
+    if (started) {
+      gameController.send(GameComponent(), GameControl.ENEMY_SPAWN);
     }
   }
 
