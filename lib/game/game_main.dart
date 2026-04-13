@@ -114,16 +114,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
       started = true;
       gamebarView.killedEnemy = 0;
+      // gamebarView.mineCollected = 999; (Already set in onLoad for prepositioning)
       gamebarView.missedEnemy = 0;
-      
-      // Show start button
-      overlays.add('start');
-    }
-  }
-
-  void start() {
-    if (started) {
-      gameController.send(GameComponent(), GameControl.ENEMY_SPAWN);
+      started = true;
     }
   }
 
@@ -218,6 +211,91 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
         overlays.add(TowerMenuWidget.name);
       }
     }
+
+    menuPosition = event.canvasPosition.toOffset();
+    
+    // Highlight the cell under the pointer
+    final components = componentsAtPoint(event.canvasPosition);
+    WeaponComponent? weapon;
+    MapTileComponent? tile;
+    
+    for (final component in components) {
+      if (component is WeaponComponent) {
+        weapon = component;
+      }
+      if (component is MapTileComponent) {
+        tile = component;
+      }
+    }
+
+    if (weapon != null) {
+      selectedWeaponForMenu = weapon;
+      overlays.add(WeaponActionMenuWidget.name);
+      
+      // Clear build preview if any
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
+        highlightedTile = null;
+      }
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
+      
+      return;
+    }
+
+    if (tile != null) {
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
+      }
+      highlightedTile = tile;
+      highlightedTile!.highlighted = true;
+      
+      // Check if placing a tower on this tile blocks the path to the exit
+      if (mapController.testBlock(highlightedTile!.position)) {
+        highlightedTile!.isBlocking = true;
+      } else {
+        // Show current tower preview on the cell
+        gameController.send(highlightedTile!, GameControl.WEAPON_BUILDING);
+        overlays.add(TowerMenuWidget.name);
+      }
+    }
+  }
+
+  @override
+  void onSecondaryTapUp(SecondaryTapUpEvent event) {
+    // If the menu is not visible, it means the pointer up event should 
+    // be handled here (e.g. released outside the menu).
+    // If the menu is visible, it has its own Listener that handles onPointerUp.
+    if (!overlays.activeOverlays.contains(TowerMenuWidget.name) && !overlays.activeOverlays.contains(WeaponActionMenuWidget.name)) {
+      menuPosition = null;
+      selectedWeaponForMenu = null;
+      if (highlightedTile != null) {
+        highlightedTile!.highlighted = false;
+        highlightedTile!.isBlocking = false;
+        highlightedTile = null;
+      }
+      // Remove preview
+      if (gameController.buildingWeapon != null) {
+        gameController.buildingWeapon!.removeFromParent();
+        gameController.buildingWeapon = null;
+      }
+    }
+  }
+
+  @override
+  void onSecondaryTapCancel(SecondaryTapCancelEvent event) {
+    // DO NOT remove the overlay here, as it may be triggered when the mouse
+    // enters the Flutter overlay while dragging.
+    // overlays.remove(TowerMenuWidget.name);
+    // menuPosition = null;
+    // if (highlightedTile != null) {
+    //   highlightedTile!.highlighted = false;
+    //   highlightedTile = null;
+    // }
   }
 
   @override
