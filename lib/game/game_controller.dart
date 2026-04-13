@@ -160,11 +160,23 @@ class GameController extends GameComponent {
   @override
   Future<void>? onLoad() {
     super.onLoad();
-    loadGate();
+    // We don't load gates here anymore, as grid size might change.
+    // They will be loaded in start() via rebuildGates().
+    // However, to avoid late initialization errors if referenced before start:
+    gateStart = NeutralComponent(position: Vector2.zero(), size: Vector2.zero(), neutualType: NeutralType.GATE_START);
+    gateEnd = NeutralComponent(position: Vector2.zero(), size: Vector2.zero(), neutualType: NeutralType.GATE_END);
     return null;
   }
 
-  void loadGate() async {
+  void rebuildGates() async {
+    // Remove existing gates if they exist
+    if (gateStart.parent != null) {
+      gateStart.removeFromParent();
+    }
+    if (gateEnd.parent != null) {
+      gateEnd.removeFromParent();
+    }
+
     /*random gate */
     double rndx = Random().nextDouble();
     double rndy = Random().nextDouble();

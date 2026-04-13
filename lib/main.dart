@@ -3,6 +3,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freedefense/game/game_main.dart';
+import 'package:freedefense/view/splash_screen_widget.dart';
 
 // import 'package:freedefense/game/game_main.dart';
 import 'package:freedefense/game/game_test.dart';
@@ -18,15 +19,18 @@ void main() async {
   GameTest game = GameTest();
 
   runApp(
-    GameWidget<GameMain>(
-      game: game,
-      overlayBuilderMap: {
-        TowerMenuWidget.name: TowerMenuWidget.builder,
-        WeaponActionMenuWidget.name: WeaponActionMenuWidget.builder,
-        'start': _pauseMenuBuilder,
-        'gameover': _gameOverBuilder,
-      },
-      initialActiveOverlays: const ['start'],
+    MaterialApp(
+      home: GameWidget<GameMain>(
+        game: game,
+        overlayBuilderMap: {
+          TowerMenuWidget.name: TowerMenuWidget.builder,
+          WeaponActionMenuWidget.name: WeaponActionMenuWidget.builder,
+          SplashScreenWidget.name: SplashScreenWidget.builder,
+          'start': _pauseMenuBuilder,
+          'gameover': _gameOverBuilder,
+        },
+        initialActiveOverlays: const [SplashScreenWidget.name],
+      ),
     ),
   );
 }

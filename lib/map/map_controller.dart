@@ -19,6 +19,13 @@ class MapController extends GameComponent with AstarMapMixin {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    rebuildGrid();
+  }
+
+  void rebuildGrid() {
+    // Clear existing MapTileComponents if any
+    final existingTiles = children.whereType<MapTileComponent>().toList();
+    removeAll(existingTiles);
 
     for (var w = 0; w < mapGrid.x; w++) {
       for (var h = 0; h < mapGrid.y; h++) {
