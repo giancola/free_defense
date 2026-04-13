@@ -187,20 +187,29 @@ class GameController extends GameComponent {
   }
 
   void rebuildGates() async {
-    // Remove existing gates if they exist
-    if (gateStart.parent != null) {
-      gateStart.removeFromParent();
-    }
-    if (gateEnd.parent != null) {
-      gateEnd.removeFromParent();
-    }
-
     /*fixed gate positions: start top-left (0,0), end lower-right (max-1, max-1)*/
     Vector2 start = Vector2(0, 0);
     Vector2 end = Vector2(gameSetting.mapGrid.x - 1, gameSetting.mapGrid.y - 1);
 
     start = gameSetting.dotMultiple(start, gameSetting.mapTileSize) + (gameSetting.mapTileSize / 2);
     end = gameSetting.dotMultiple(end, gameSetting.mapTileSize) + (gameSetting.mapTileSize / 2);
+
+    // If gates already exist, just update their positions and sizes
+    if (gateStart.parent != null && gateEnd.parent != null) {
+      gateStart.position = start;
+      gateStart.size = gameSetting.mapTileSize;
+      gateEnd.position = end;
+      gateEnd.size = gameSetting.mapTileSize;
+      if (gateEnd.radarOn) {
+        gateEnd.radarRange = (gateEnd.size.x + gateEnd.size.y) / 4;
+      }
+      return;
+    }
+
+    // Remove any orphaned gate components just in case
+    children.whereType<NeutralComponent>().where((n) => 
+      n.neutualType == NeutralType.GATE_START || n.neutualType == NeutralType.GATE_END
+    ).forEach((n) => n.removeFromParent());
 
     final images = Images();
     gateStart = NeutralComponent(position: start, size: gameSetting.mapTileSize, neutualType: NeutralType.GATE_START)

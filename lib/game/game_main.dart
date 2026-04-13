@@ -40,6 +40,24 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       weaponFactory.onResize(
           Vector2(setting.viewSize.x * (1 / 3), setting.viewPosition.y),
           Vector2(setting.viewSize.x * (2 / 3) - setting.mapTileSize.x, setting.viewSize.y * (2 / 3)));
+      
+      // Clear build preview and menus during resize to prevent scaling artifacts
+      if (overlays.activeOverlays.contains(TowerMenuWidget.name) || 
+          overlays.activeOverlays.contains(WeaponActionMenuWidget.name)) {
+        overlays.remove(TowerMenuWidget.name);
+        overlays.remove(WeaponActionMenuWidget.name);
+        menuPosition = null;
+        selectedWeaponForMenu = null;
+        if (highlightedTile != null) {
+          highlightedTile!.highlighted = false;
+          highlightedTile!.isBlocking = false;
+          highlightedTile = null;
+        }
+        if (gameController.buildingWeapon != null) {
+          gameController.buildingWeapon!.removeFromParent();
+          gameController.buildingWeapon = null;
+        }
+      }
     }
     super.onGameResize(size);
   }
