@@ -70,44 +70,51 @@ class WeaponActionMenuWidget extends StatelessWidget {
     return Positioned(
       left: position.dx,
       top: position.dy,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white, width: 1),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (weapon.barrelModelIndex < 2)
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) {
+          // Prevent Flame from handling this event and closing the menu
+          print('WeaponActionMenu: Container TapDown');
+        },
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white, width: 1),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (weapon.barrelModelIndex < 2)
+                  _buildMenuItem(
+                    label: 'Upgrade',
+                    price: upgradeCost,
+                    onTap: () {
+                      if (canUpgrade) {
+                        game.gamebarView.mineCollected -= upgradeCost;
+                        weapon.upgradeBarrel();
+                        _closeMenu();
+                      }
+                    },
+                    enabled: canUpgrade,
+                  ),
                 _buildMenuItem(
-                  label: 'Upgrade',
-                  price: upgradeCost,
+                  label: 'X',
+                  price: sellPrice,
                   onTap: () {
-                    if (canUpgrade) {
-                      game.gamebarView.mineCollected -= upgradeCost;
-                      weapon.upgradeBarrel();
-                      _closeMenu();
-                    }
+                    game.gamebarView.mineCollected += sellPrice;
+                    weapon.active = false;
+                    weapon.removeFromParent();
+                    game.gameController.send(weapon, GameControl.WEAPON_DESTROYED);
+                    _closeMenu();
                   },
-                  enabled: canUpgrade,
+                  enabled: true,
                 ),
-              _buildMenuItem(
-                label: 'X',
-                price: sellPrice,
-                onTap: () {
-                  game.gamebarView.mineCollected += sellPrice;
-                  weapon.active = false;
-                  weapon.removeFromParent();
-                  game.gameController.send(weapon, GameControl.WEAPON_DESTROYED);
-                  _closeMenu();
-                },
-                enabled: true,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -120,30 +127,46 @@ class WeaponActionMenuWidget extends StatelessWidget {
     required VoidCallback onTap,
     required bool enabled,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: enabled ? Colors.white : Colors.grey,
-                fontSize: 14,
-                fontWeight: label == 'X' ? FontWeight.bold : FontWeight.normal,
-              ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (details) {
+        // Stop event propagation to prevent FlameGame from handling it
+        print('WeaponActionMenu: Item $label TapDown');
+      },
+      onTapUp: (details) {
+        print('WeaponActionMenu: Item $label TapUp (enabled: $enabled)');
+        if (enabled) {
+          onTap();
+        }
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: enabled ? Colors.white : Colors.grey,
+                    fontSize: 14,
+                    fontWeight: label == 'X' ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '$price',
+                  style: TextStyle(
+                    color: enabled ? Colors.yellow : Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '$price',
-              style: TextStyle(
-                color: enabled ? Colors.yellow : Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
