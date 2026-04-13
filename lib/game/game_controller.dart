@@ -177,18 +177,10 @@ class GameController extends GameComponent {
       gateEnd.removeFromParent();
     }
 
-    /*random gate */
-    double rndx = Random().nextDouble();
-    double rndy = Random().nextDouble();
-    Vector2 start, end;
+    /*fixed gate positions: start top-left (0,0), end lower-right (max-1, max-1)*/
+    Vector2 start = Vector2(0, 0);
+    Vector2 end = Vector2(gameSetting.mapGrid.x - 1, gameSetting.mapGrid.y - 1);
 
-    if (rndx < rndy) {
-      start = Vector2(0, (Random().nextDouble() * gameSetting.mapGrid.y).toInt().toDouble());
-      end = Vector2(gameSetting.mapGrid.x - 1, (Random().nextDouble() * gameSetting.mapGrid.y).toInt().toDouble());
-    } else {
-      start = Vector2((Random().nextDouble() * gameSetting.mapGrid.x).toInt().toDouble(), 0);
-      end = Vector2((Random().nextDouble() * gameSetting.mapGrid.x).toInt().toDouble(), gameSetting.mapGrid.y - 1);
-    }
     start = gameSetting.dotMultiple(start, gameSetting.mapTileSize) + (gameSetting.mapTileSize / 2);
     end = gameSetting.dotMultiple(end, gameSetting.mapTileSize) + (gameSetting.mapTileSize / 2);
 
