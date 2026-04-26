@@ -4,15 +4,18 @@ import 'dart:math';
 import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:freedefense/base/game_component.dart';
+import 'package:freedefense/map/map_tile_component.dart';
 import 'package:freedefense/base/radar.dart';
 import 'package:freedefense/base/scanable.dart';
 import 'package:freedefense/enemy/enemy_component.dart';
 import 'package:freedefense/enemy/enemy_factory.dart';
 import 'package:freedefense/game/game_setting.dart';
 import 'package:freedefense/view/weapon_factory_view.dart';
+import 'package:freedefense/weapon/bullet_component.dart';
 import 'package:freedefense/weapon/weapon_component.dart';
 
 import '../neutral/neutral_component.dart';
+import '../map/map_tile_component.dart';
 
 GameSetting gameSetting = GameSetting();
 
@@ -39,7 +42,11 @@ class GameInstruction {
     switch (instruction) {
       case GameControl.WEAPON_BUILDING:
         // Use preview = true for WEAPON_BUILDING to ensure the preview component is created
-        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(this.source.position, isPreview: true);
+        Vector2 position = this.source.position;
+        // source is MapTileComponent, its position is centered relative to MapController (Anchor.topLeft)
+        // GameController is also Anchor.topLeft at same position as MapController.
+        // So MapTileComponent.position is already correct for GameController.
+        WeaponComponent? component = controller.gameRef.weaponFactory.buildWeapon(position, isPreview: true);
         if (component != null) {
           controller.add(component);
           controller.buildingWeapon?.removeFromParent();
@@ -114,6 +121,7 @@ class GameController extends GameComponent {
     position,
     size,
   }) : super(position: position, size: size, priority: 10) {
+    anchor = Anchor.topLeft;
     add(enemyFactory);
   }
 
@@ -171,18 +179,57 @@ class GameController extends GameComponent {
   void onResize(Vector2 position, Vector2 size, Vector2 tileSize) {
     this.position = position;
     this.size = size;
+
+    Vector2? scaleFactor = gameSetting.resizeScaleFactor;
+
     rebuildGates();
+
+    // Use old tile size for grid cell calculation; fall back to new tileSize on first resize
+    Vector2 oldTileSize = gameSetting.previousMapTileSize ?? tileSize;
+
     children.whereType<WeaponComponent>().forEach((weapon) {
-      // Reposition based on grid
-      int w = (weapon.position.x / weapon.size.x).floor();
-      int h = (weapon.position.y / weapon.size.y).floor();
-      weapon.size = tileSize;
-      weapon.position = Vector2(w * tileSize.x, h * tileSize.y) + (tileSize / 2);
+      // Compute grid cell from position using old tile size
+      int gx = ((weapon.position.x - oldTileSize.x / 2) / oldTileSize.x).round();
+      int gy = ((weapon.position.y - oldTileSize.y / 2) / oldTileSize.y).round();
+      // Reposition to new tile grid and set size from rescaled weapon setting
+      weapon.position = Vector2(gx * tileSize.x, gy * tileSize.y) + (tileSize / 2);
+      weapon.size = weapon.weaponSetting.size.clone();
+      // Scale weapon's live range (which may include upgrade multipliers)
+      if (scaleFactor != null) {
+        double uniformScale = (scaleFactor.x + scaleFactor.y) / 2;
+        weapon.range *= uniformScale;
+      }
+      weapon.radarRange = weapon.buildDone ? weapon.range : (weapon.size.x + weapon.size.y) / 4;
     });
-    // Enemies are trickier because they are moving.
-    // For now, let's just scale their size.
+
+    // Rescale enemies: update size and reposition proportionally
     children.whereType<EnemyComponent>().forEach((enemy) {
       enemy.size = gameSetting.dotMultiple(gameSetting.enemySizeCale, tileSize);
+      if (scaleFactor != null) {
+        enemy.position = Vector2(
+          enemy.position.x * scaleFactor.x,
+          enemy.position.y * scaleFactor.y,
+        );
+        enemy.speed *= (scaleFactor.x + scaleFactor.y) / 2;
+      }
+      // Reroute to new target position
+      enemy.moveSmart(gateEnd.position);
+    });
+
+    // Rescale bullets in flight
+    children.whereType<BulletComponent>().forEach((bullet) {
+      if (scaleFactor != null) {
+        bullet.position = Vector2(
+          bullet.position.x * scaleFactor.x,
+          bullet.position.y * scaleFactor.y,
+        );
+        bullet.size = Vector2(
+          bullet.size.x * scaleFactor.x,
+          bullet.size.y * scaleFactor.y,
+        );
+        bullet.speed *= (scaleFactor.x + scaleFactor.y) / 2;
+        bullet.radarRange = (bullet.size.x + bullet.size.y) / 4;
+      }
     });
   }
 

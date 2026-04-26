@@ -40,7 +40,7 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget> {
       // we just set the preferred grid.
       // If the game already called setScreenSize, we might need to call it again.
       if (gameSetting.screenSize != null) {
-        gameSetting.setScreenSize(gameSetting.screenSize);
+        gameSetting.setScreenSize(gameSetting.screenSize, forceGridUpdate: true);
       }
       
       widget.game.create();

@@ -7,7 +7,7 @@ import '../game/game_setting.dart';
 
 class EnemySetting {
   late final double life;
-  late final double speed;
+  late double speed;
   late final double scale;
   late final double enemySize;
   late final SpriteSheet spriteSheet;

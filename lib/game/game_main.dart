@@ -30,10 +30,31 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
 
   GameMain();
 
+  Vector2? _lastResizeSize;
+
   @override
   void onGameResize(Vector2 size) {
+    // Skip resize logic if the size hasn't actually changed
+    if (_lastResizeSize != null && _lastResizeSize!.x == size.x && _lastResizeSize!.y == size.y) {
+      super.onGameResize(size);
+      return;
+    }
+    _lastResizeSize = size.clone();
+
     setting.setScreenSize(size);
     if (loadDone) {
+      // Rescale weapon and enemy settings proportionally if tile size changed
+      Vector2? scaleFactor = setting.resizeScaleFactor;
+      if (scaleFactor != null) {
+        double uniformScale = (scaleFactor.x + scaleFactor.y) / 2;
+        for (var w in setting.weapons.weapon) {
+          w.rescale(scaleFactor);
+        }
+        for (var e in setting.enemies.enemy) {
+          e.speed *= uniformScale;
+        }
+      }
+
       mapController.onResize(setting.mapPosition, setting.mapSize, setting.mapTileSize);
       gameController.onResize(setting.mapPosition, setting.mapSize, setting.mapTileSize);
       gamebarView.onResize(setting.barPosition, setting.barSize);
@@ -77,7 +98,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
     mapController = MapController(
         tileSize: setting.mapTileSize, mapGrid: setting.mapGrid, position: setting.mapPosition, size: setting.mapSize);
     /*game controller should have same range as map */
-    gameController = GameController(position: setting.mapPosition, size: setting.mapSize);
+    gameController = GameController(
+        position: setting.mapPosition,
+        size: setting.mapSize);
 
     gamebarView = GamebarView();
     weaponFactory = WeaponFactoryView();
@@ -135,9 +158,15 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       mapController.size = setting.mapSize;
       mapController.rebuildGrid();
 
-      gameController.position = setting.mapPosition;
       gameController.size = setting.mapSize;
+      gameController.position = setting.mapPosition;
       gameController.rebuildGates();
+
+      // Recalculate layout for other views too
+      gamebarView.onResize(setting.barPosition, setting.barSize);
+      weaponFactory.onResize(
+          Vector2(setting.viewSize.x * (1 / 3), setting.viewPosition.y),
+          Vector2(setting.viewSize.x * (2 / 3) - setting.mapTileSize.x, setting.viewSize.y * (2 / 3)));
 
       started = true;
       gamebarView.killedEnemy = 0;
@@ -237,7 +266,9 @@ class GameMain extends FlameGame with TapCallbacks, SecondaryTapCallbacks, GameM
       highlightedTile!.highlighted = true;
       
       // Check if placing a tower on this tile blocks the path to the exit
-      if (mapController.testBlock(highlightedTile!.position)) {
+      // tile.position is centered relative to MapController (Anchor.topLeft)
+      // MapController.testBlock expects position relative to MapController's top-left
+      if (mapController.testBlock(tile.position)) {
         highlightedTile!.isBlocking = true;
       } else {
         // Show current tower preview on the cell

@@ -55,9 +55,22 @@ class GameSetting {
     return dotMultiple(mapTileSize, scale);
   }
 
-  void setScreenSize(Vector2 size) {
+  Vector2? _previousMapTileSize;
+
+  /// The tile size before the most recent resize. Null if no resize has occurred yet.
+  Vector2? get previousMapTileSize => _previousMapTileSize;
+
+  /// Returns the scale factor between old and new mapTileSize after a resize.
+  /// Returns null if there was no previous tile size (first call).
+  Vector2? get resizeScaleFactor {
+    if (_previousMapTileSize == null) return null;
+    return dotDivide(mapTileSize, _previousMapTileSize!);
+  }
+
+  void setScreenSize(Vector2 size, {bool forceGridUpdate = false}) {
     screenSize = size;
-    optimizeMapGrid(size);
+    _previousMapTileSize = loadDone ? mapTileSize.clone() : null;
+    optimizeMapGrid(size, forceGridUpdate: forceGridUpdate);
 
     enemySize = dotMultiple(enemySizeCale, mapTileSize);
     enemySpawn = Vector2(0, 0) + (mapTileSize / 2);
@@ -67,46 +80,57 @@ class GameSetting {
     print('screenSize $screenSize,  mapGrid $mapGrid, mapTileSize $mapTileSize');
   }
 
-  void optimizeMapGrid(Vector2 size) {
-    if (loadDone) {
+  void optimizeMapGrid(Vector2 size, {bool forceGridUpdate = false}) {
+    if (loadDone && !forceGridUpdate) {
       // If game is already loaded, we keep mapGrid fixed and only update layout sizes/positions
       _calculateLayout(size);
     } else {
-      // First time initialization
+      // First time initialization or forced update
       if (preferredMapGrid != null) {
         mapGrid = preferredMapGrid!;
       } else {
         mapGrid = Vector2(10, 10);
       }
-      double grid = math.min(mapGrid.x, mapGrid.y);
-      Vector2 optSize = size / grid;
-      grid = math.min(optSize.x, optSize.y);
 
       _calculateLayout(size);
 
       if (preferredMapGrid == null) {
-        mapGrid = mapSize / grid;
+        mapGrid = mapSize / mapTileSize.x;
         mapGrid = Vector2(mapGrid.x.toInt().toDouble(), mapGrid.y.toInt().toDouble());
+        _calculateLayout(size);
       }
-      mapTileSize = dotDivide(mapSize, mapGrid);
     }
   }
 
   void _calculateLayout(Vector2 size) {
-    double grid = math.min(mapGrid.x, mapGrid.y);
-    Vector2 optSize = size / grid;
-    grid = math.min(optSize.x, optSize.y);
+    // Determine the height for top and bottom UI bars
+    // We use a fraction of the screen height or a fixed grid-based size.
+    // To keep it consistent, let's use a base unit.
+    double baseUnit = math.min(size.x, size.y) / 10;
 
     /*Bar at top*/
-    barPosition = Vector2(size.x / 2, grid / 2);
-    barSize = Vector2(size.x, grid);
-    viewPosition = Vector2(size.x / 2, size.y - (grid / 2));
-    viewSize = Vector2(size.x, grid * 1.5);
-    /*Map in the middle*/
-    mapPosition = Vector2(size.x / 2, size.y / 2);
-    mapSize = Vector2(size.x - 2, size.y - barSize.y - viewSize.y - 2);
+    barPosition = Vector2(size.x / 2, baseUnit / 2);
+    barSize = Vector2(size.x, baseUnit);
 
-    mapTileSize = dotDivide(mapSize, mapGrid);
+    /*Bottom view area*/
+    viewPosition = Vector2(size.x / 2, size.y - (baseUnit * 0.75));
+    viewSize = Vector2(size.x, baseUnit * 1.5);
+
+    /*Map in the middle*/
+    // Available space for the map
+    Vector2 availableMapSize = Vector2(size.x - 2, size.y - barSize.y - viewSize.y - 2);
+
+    // Ensure square tiles
+    double tileSize = math.min(availableMapSize.x / mapGrid.x, availableMapSize.y / mapGrid.y);
+    mapTileSize = Vector2(tileSize, tileSize);
+
+    // Actual map size based on square tiles
+    mapSize = Vector2(mapTileSize.x * mapGrid.x, mapTileSize.y * mapGrid.y);
+
+    // Position of the map's top-left corner, centered in the available space
+    double mapLeft = (size.x - mapSize.x) / 2;
+    double mapTop = barSize.y + (availableMapSize.y - mapSize.y) / 2;
+    mapPosition = Vector2(mapLeft, mapTop);
   }
 
   bool loadDone = false;

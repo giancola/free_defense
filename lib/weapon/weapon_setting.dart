@@ -36,20 +36,20 @@ class WeaponSetting {
   late final List<String?> paths = List.filled(3, null);
   late final Sprite bullet;
   late final SpriteSheet explosion;
-  late final Vector2 explosionSize;
+  late Vector2 explosionSize;
   late final List<Sprite> explosionSprites;
 
   WeaponSetting.empty() {}
 
-  fill(gameSetting, weaponParam, tileSize, weaponTower, images) async {
+  fill(gameSetting, weaponParam, weaponTower, images) async {
     label = weaponParam['label'];
     cost = weaponParam['cost'];
-    range = weaponParam['range'] * tileSize;
+    range = weaponParam['range'] * gameSetting.mapTileSize.x;
     damage = weaponParam['damage'];
     currentDamage = damage;
     fireInterval = weaponParam['fireInterval'];
     rotateSpeed = pi * weaponParam['rotateSpeed'];
-    bulletSpeed = tileSize * weaponParam['bulletSpeed'];
+    bulletSpeed = gameSetting.mapTileSize.x * weaponParam['bulletSpeed'];
     currentBulletSpeed = bulletSpeed;
     size = gameSetting.scaleOnMapTile(Vector2(weaponParam['sizeX'], weaponParam['sizeY']));
     bulletSize = gameSetting.scaleOnMapTile(Vector2(weaponParam['bulletSizeX'], weaponParam['bulletSizeY']));
@@ -70,6 +70,17 @@ class WeaponSetting {
     bulletSpeedDelta = weaponParam['bulletSpeedDelta'];
   }
 
+  /// Rescale all tile-relative values proportionally when mapTileSize changes.
+  void rescale(Vector2 scaleFactor) {
+    double uniformScale = (scaleFactor.x + scaleFactor.y) / 2;
+    size = Vector2(size.x * scaleFactor.x, size.y * scaleFactor.y);
+    bulletSize = Vector2(bulletSize.x * scaleFactor.x, bulletSize.y * scaleFactor.y);
+    explosionSize = Vector2(explosionSize.x * scaleFactor.x, explosionSize.y * scaleFactor.y);  // explosionSize is now non-final to support rescaling
+    range *= uniformScale;
+    bulletSpeed *= uniformScale;
+    currentBulletSpeed *= uniformScale;
+  }
+
   void createExpolosionAnimation(List<Vector2> frameLocation, double stepTime) {
     List<Sprite> sprites = [];
     frameLocation.forEach((v) => sprites.add(explosion.getSprite(v.x.toInt(), v.y.toInt())));
@@ -87,7 +98,6 @@ class WeaponSettingV1 {
   Future<void> load(gameSetting) async {
     final images = Images();
     Sprite weaponTower = Sprite(await images.load('weapon/Tower.png'));
-    double tileSize = gameSetting.mapTileSize.length;
 
     String weaponParamsString = await loadAsset('assets/weaponParams.json');
     final weaponParams = json.decode(weaponParamsString);
@@ -111,7 +121,7 @@ class WeaponSettingV1 {
           columns: weaponParam['columns'],
           rows: weaponParam['rows'],
         );
-      w.fill(gameSetting, weaponParam, tileSize, weaponTower, images);
+      w.fill(gameSetting, weaponParam, weaponTower, images);
 
       double explosionTimeStep = weaponParam['explosionTimeStep'];
       w.createExpolosionAnimation(expFrame, explosionTimeStep);
